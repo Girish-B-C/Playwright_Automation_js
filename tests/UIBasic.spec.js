@@ -1,4 +1,5 @@
 const {test, expect} = require('@playwright/test');
+const { title } = require('process');
 
 
 //This contains practice until section 5
@@ -91,16 +92,44 @@ test('Fourth test for multiple elements', async({page}) =>
 
         test('attribute value test ', async({page}) => 
         {
-                await page.goto("https://rahulshettyacademy.com/loginpagePractise/"); 
-                const signInbutton = await page.locator("#signInBtn")
-                await expect(signInbutton).toHaveAttribute("type","submit")
+                const product ="ZARA COAT 3";
+                await page.goto("https://rahulshettyacademy.com/client"); 
+                await page.locator("#userEmail").fill("anshika@gmail.com");
+                await page.locator("#userPassword").fill("Iamking@000");
+                await page.locator("[value='Login']").click();
+                await page.waitForLoadState('networkidle');
+
+                const titles = await page.locator(".card-body b").allTextContents();
+                console.log(titles)
+
+                const products = await page.locator(".card-body");        // grab a unique locators to fetch all the products on the screen
+                const count = await  products.count();   // get the count of products
+                await console.log(count);  
+
+                for(let i=0;i<count;i++)   //iterate through all the products items
+                {
+                    if(await products.nth(i).locator("b").textContent() == product) //compare with the product name that you want to add to cart
+                    {
+                        await  console.log("inside the loop"); 
+                        await products.nth(i).locator("text=' Add To Cart'").click();    //Add to cart
+                        break;  //come out of loop once the product is added to cart
+                    }
+                }
+             
+                
+                await page.locator("app-sidebar button").nth(2).click();
+                await page.locator("div li").first().waitFor();
+                const bool = await page.locator("h3:has-text('ZARA COAT 3')").isVisible();
+                expect(bool).toBe(true);
+
+                await page.pause();
 
         })
 
         //to handle chil windows in playwright
 
-
-            test.only('child window test ', async({browser}) => 
+        //.only is used to run only that test
+            test('child window test ', async({browser}) => 
             {   
 
                     const context = await browser.newContext(); // mew browser context is getting created
