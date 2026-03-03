@@ -25,7 +25,7 @@ test.beforeAll( async() => {
 test.beforeEach(async()=>{
 
 })
-test.only('First Playwright test', async ({page}) => 
+test('First Playwright test', async ({page}) => 
 {
 
    
