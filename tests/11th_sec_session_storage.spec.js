@@ -1,9 +1,48 @@
 const {test, expect, request} = require('@playwright/test');
-const { title } = require('process');
-
-test('Session storage Playwright test', async ({page}) => 
-    {
-
-
-
-    });
+const {APiUtils} = require('../utils/APiUtils');
+const loginPayLoad = {userEmail:"test123@test1237.com",userPassword:"20Feb1995$"};
+const orderPayLoad = {orders:[{country:"Cuba",productOrderedId:"6960eac0c941646b7a8b3e68"}]};
+ 
+ 
+let response;
+test.beforeAll( async()=>
+{
+   const apiContext = await request.newContext();
+   const apiUtils = new APiUtils(apiContext,loginPayLoad);
+   response =  await apiUtils.createOrder(orderPayLoad);
+   
+})
+ 
+ 
+//create order is success
+test.only('@API Place the order', async ({page})=>
+{ 
+    await page.addInitScript(value => {
+ 
+        window.localStorage.setItem('token',value);
+    }, response.token );
+await page.goto("https://rahulshettyacademy.com/client");
+ await page.locator("button[routerlink*='myorders']").click();
+ await page.locator("tbody").waitFor();
+const rows = await page.locator("tbody tr");
+ 
+ 
+for(let i =0; i<await rows.count(); ++i)
+{
+   const rowOrderId =await rows.nth(i).locator("th").textContent();
+   console.log(rowOrderId);
+   console.log(response.orderId);
+   if (response.orderId.includes(rowOrderId))
+   {
+       await rows.nth(i).locator("button").first().click();
+       break;
+   }
+}
+const orderIdDetails =await page.locator(".col-text").textContent();
+//await page.pause();
+expect(response.orderId.includes(orderIdDetails)).toBeTruthy();
+ 
+});
+ 
+//Verify if order created is showing in history page
+// Precondition - create order -
